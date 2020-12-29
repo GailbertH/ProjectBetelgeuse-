@@ -14,15 +14,17 @@ public class SplashHandler : MonoBehaviour
     void Start()
     {
         SetupText.text = "Loading...";
-        StartButton.gameObject.SetActive(false);
+        StartButton.interactable = false;
         SetupData();
     }
 
     private void SetupComplete()
     {
-        SetupText.text = "Tap Screen To Start";
-        SetupTextAnimation.Play();
-        StartButton.gameObject.SetActive(true);
+        SetupText.text = "Tap screen to start.";
+        StartButton.interactable = true;
+
+        if (SetupTextAnimation != null)
+            SetupTextAnimation.Play();
     }
 
     private void SetupData()
@@ -47,7 +49,8 @@ public class SplashHandler : MonoBehaviour
 
     private void UnloadScene()
     {
-        SetupTextAnimation.Stop();
+        if (SetupTextAnimation != null)
+            SetupTextAnimation.Stop();
         splashCanvas = null;
         StartButton = null;
         SetupText = null;
@@ -61,7 +64,7 @@ public class SplashHandler : MonoBehaviour
         yield return new WaitUntil(() => loadScene.isDone == true && LoadingManager.Instance != null);
 
         LoadingManager.Instance.SetSceneToLoad(SceneNames.DATA_SCENE);
-        LoadingManager.Instance.LoadScene();
+        yield return LoadingManager.Instance.LoadSceneAsync();
         LoadingManager.Instance.SetSceneToLoad(SceneNames.LOBBY_SCENE);
         LoadingManager.Instance.SilentLoadScene();
         isMenuReady = true;
