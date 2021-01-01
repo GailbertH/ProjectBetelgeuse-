@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class LoadingManager : MonoBehaviour
 {
-	[SerializeField] private LoadingMeter loadingMeter;
+	//[SerializeField] private LoadingMeter loadingMeter;
 	[SerializeField] GameObject canvas;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] Camera mainCamera;
@@ -35,21 +35,11 @@ public class LoadingManager : MonoBehaviour
     private void SetUpLoadingMeter(bool autoLoadDone = true)
 	{
 		mainCamera.gameObject.SetActive (true);
-        loadingMeter.OnLoadMeterChange (this.OnLoadBarChange);
-        if (autoLoadDone == true)
-        {
-            loadingMeter.OnLoadDone(this.OnLoadBarFull);
-        }
 	}
 
-	private void OnLoadBarChange(float value)
+	public void LoadFinish()
 	{
-		Debug.Log("LoadBar " + value);
-	}
-
-	public void OnLoadBarFull()
-	{
-		Debug.Log("Load Bar Full ");
+		Debug.Log("Loading is done");
 
 		asyncLoading.allowSceneActivation = true;
 
@@ -82,6 +72,15 @@ public class LoadingManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Neeeds to call SetSceneToLoad first
+    /// </summary>
+    public Coroutine LoadSceneAsync()
+    {
+        loadingRoutine = StartCoroutine(LoadAsynceScene(true));
+        return loadingRoutine;
+    }
+
+    /// <summary>
     /// Neeeds to call SetSceneToLoad first this is background load version set is not visible first
     /// </summary>
     public void SilentLoadScene()
@@ -103,9 +102,8 @@ public class LoadingManager : MonoBehaviour
 	{
         CanvasVisible(true);
         this.SetUpLoadingMeter ();
-		loadingMeter.Reset ();
 		unloadingRoutine = StartCoroutine (UnLoadAsyncScene ());
-		loadingRoutine = StartCoroutine (LoadAsynceScene(true));
+		loadingRoutine = StartCoroutine (LoadAsynceScene(true, true));
 	}
 
     private void CanvasVisible(bool toShow)
@@ -114,7 +112,7 @@ public class LoadingManager : MonoBehaviour
         canvas.SetActive(toShow);
     }
 
-	private IEnumerator LoadAsynceScene(bool allowActivation)
+	private IEnumerator LoadAsynceScene(bool allowActivation, bool willFadeOut = false)
 	{
 		string[] sceneToLoadQueue = this.sceneToLoad.Split (',');
 		float loadingProgress = 0;
@@ -124,17 +122,14 @@ public class LoadingManager : MonoBehaviour
 			Debug.Log ("LOADING SCENE " + sceneToLoadQueue [i]);
 			asyncLoading = SceneManager.LoadSceneAsync (sceneToLoadQueue[i], LoadSceneMode.Additive);
 			asyncLoading.allowSceneActivation = allowActivation;
-
-			while (!asyncLoading.isDone) 
-			{
-				//Debug.Log(asyncLoading.progress + " + " + loadingProgress + " / " + (0.9f * sceneToLoadQueue.Length));
-				loadingMeter.MeterValue = Mathf.Clamp01 ((asyncLoading.progress + loadingProgress) / (0.9f * sceneToLoadQueue.Length));
-				//Debug.Log (loadingMeter.MeterValue);
-				yield return null;
-			}
-		}
+        }
 		sceneToLoad = "";
-	}
+        yield return new WaitForEndOfFrame();
+        if (willFadeOut)
+        {
+            LoadFinish();
+        }
+    }
 
 	private IEnumerator UnLoadAsyncScene()
 	{
@@ -144,18 +139,15 @@ public class LoadingManager : MonoBehaviour
 			for (int i = 0; sceneToUnloadQueue.Length > i; i++) 
 			{
 				asyncUnloading = SceneManager.UnloadSceneAsync (sceneToUnloadQueue[i]);
-
-				while (!asyncUnloading.isDone) 
-				{
-					yield return null;
-				}
 			}
 			sceneToUnload = "";
-		}
-	}
+        }
+        yield return new WaitForEndOfFrame();
+    }
 
     private IEnumerator FadeOutCoroutine()
     {
+        Debug.Log("Fade");
         yield return new WaitForSeconds(0.5f);
         float time = 0.5f;
         while (canvasGroup.alpha > 0)
