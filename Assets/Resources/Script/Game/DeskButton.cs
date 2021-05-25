@@ -17,14 +17,17 @@ public class DeskButton : TouchResponse
     public SpriteRenderer sp;
 
     [SerializeField] private int counter;
+    [SerializeField] private int learnCounter;
     [SerializeField] DeskButton northSeatMate; //back
     [SerializeField] DeskButton southSeatMate; //front
     [SerializeField] DeskButton eastSeatMate; //right
     [SerializeField] DeskButton westSeatMate; //left
-
+    private int baseCounter;
+    private int baseLearnCounter;
     private void Start()
     {
-        counter = Random.Range(5, 11);
+        baseCounter = counter = Random.Range(10, 20);
+        baseLearnCounter = learnCounter = Random.Range(2, 6);
     }
 
     public void CountDown()
@@ -32,6 +35,7 @@ public class DeskButton : TouchResponse
         if (counter > 0)
         {
             counter--;
+            learnCounter--;
             if (counter == 0)
             {
                 Color red = Color.red;
@@ -44,8 +48,9 @@ public class DeskButton : TouchResponse
     public int CheckStudyProgress()
     {
         int studyScore = 1;
-        if (counter > 0)
+        if (counter > 0 && learnCounter <= 0)
         {
+            learnCounter = baseLearnCounter;
             Color green = Color.green;
             green.a = 0.4f;
             sp.color = green;
@@ -61,7 +66,7 @@ public class DeskButton : TouchResponse
         if (sp.color != Color.white)
         {
             ResetColor();
-            counter = Random.Range(5, 11);
+            counter = baseCounter;
         }
     }
 
