@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
     public BetelgeuseStateMachine StateMachine { get { return this.stateMachine; } }
 
     [SerializeField] private DeskHandler deskHandler;
+    [SerializeField] private int frameRate = 60;
+    
     public DeskHandler DeskHandler { get { return deskHandler; } }
 
     public GameManagerUI GameManagerUI { get { return GameManagerUI.Instance; } }
@@ -24,7 +26,7 @@ public class GameManager : MonoBehaviour
     #region Monobehavior Function
     void Awake()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = frameRate;
         instance = this;
     }
 
