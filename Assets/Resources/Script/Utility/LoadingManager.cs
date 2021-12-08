@@ -103,7 +103,7 @@ public class LoadingManager : MonoBehaviour
         CanvasVisible(true);
         this.SetUpLoadingMeter ();
 		unloadingRoutine = StartCoroutine (UnLoadAsyncScene ());
-		loadingRoutine = StartCoroutine (LoadAsynceScene(true, true));
+		loadingRoutine = StartCoroutine (LoadAsynceScene(true));
 	}
 
     private void CanvasVisible(bool toShow)
